@@ -22,6 +22,7 @@
     <div class="cob-brand__rule" aria-hidden="true"></div>
   </header>
   <main id="main" tabindex="-1">
+    <noscript><p class="notice">JavaScript is required to run this local simulation. Enable it and reload to compare the two stores. The instructions and project notes remain available below.</p></noscript>
     <p class="eyebrow">Friedman Economic Games · Proposal 8</p>
     <h1>Supermarket</h1>
     <p class="intro">Explore queue equilibria, negative feedback, search costs, and imperfect information.</p>
@@ -63,7 +64,8 @@
     <section class="card" aria-labelledby="playback-heading">
       <h2 id="playback-heading">Follow the shoppers</h2>
       <div class="buttons"><button type="button" id="step">Step one unit</button><button type="button" id="play" class="primary">Run</button><button type="button" id="finish">Finish comparison</button></div>
-      <p id="run-status" class="status"></p>
+      <p id="run-status" class="status" tabindex="-1"></p>
+      <a href="#results-heading" class="results-link">Jump to comparison results</a>
       <p id="applied-settings" class="help"></p>
       <p class="help">Run advances ten units every 700 milliseconds. Pause stops Run or Finish comparison. Motion is a schematic; the tables carry the same results.</p>
     </section>
@@ -73,16 +75,17 @@
       <div class="stores" id="stores"></div>
     </section>
     <section class="card" aria-labelledby="results-heading">
-      <h2 id="results-heading">Compare total exit time</h2>
+      <h2 id="results-heading" tabindex="-1">Compare total exit time</h2>
       <p id="comparison-summary" class="status"></p>
       <p>All averages below are per completed shopper. <strong>Search + travel + queue wait + service = total exit time.</strong> During playback, unfinished shoppers are excluded and the averages are provisional.</p>
+      <p class="help">Searching and non-searching groups contain different shoppers. Their averages alone do not isolate the effect of searching. The final all-shopper comparison uses the same arrivals and baskets in both stores.</p>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Store and shopper cohort averages">
         <table id="summary-table"><caption>Mean time components, in abstract time units</caption><thead><tr><th scope="col">Store / cohort</th><th scope="col">Completed</th><th scope="col">Search</th><th scope="col">Travel</th><th scope="col">Queue wait</th><th scope="col">Service</th><th scope="col">Total exit</th></tr></thead><tbody></tbody></table>
       </div>
     </section>
     <section class="card" aria-labelledby="history-heading">
       <h2 id="history-heading">Lane workloads over time</h2>
-      <p>Each line is one lane. Numbered labels and different line patterns supplement color. Samples are recorded every ten units, when arrivals stop, and when a store drains.</p>
+      <p>Each line is one lane. Numbered labels and different line patterns supplement color. Samples are recorded every ten units, when arrivals stop, and when a store drains. The chart and table also include the current tick.</p>
       <div class="stores" id="histories"></div>
       <details id="history-details"><summary>Read the workload history table</summary><div class="table-scroll" tabindex="0" role="region" aria-label="Sampled lane workload history"><table id="history-table"><caption>Recorded workload samples (units)</caption><thead><tr><th scope="col">Store / tick</th><th scope="col">Lane 1</th><th scope="col">Lane 2</th><th scope="col">Lane 3</th><th scope="col">Lane 4</th></tr></thead><tbody></tbody></table></div></details>
     </section>

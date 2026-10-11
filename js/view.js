@@ -45,16 +45,12 @@
     var b = M.stats(state.baseline, state.params.cutoff), e = M.stats(state.experiment, state.params.cutoff);
     var text = M.finished(state) ? 'Final: every admitted shopper has finished.' : 'Provisional: ' + M.unfinished(state.baseline) + ' baseline and ' + M.unfinished(state.experiment) + ' experiment shoppers are unfinished; future arrivals may also remain.';
     if (b.count && e.count) text += ' Mean total exit: baseline ' + num(b.total) + ', experiment ' + num(e.total) + ' units.';
-    if (M.finished(state) && b.count) text += ' Experiment minus baseline: ' + num(e.total - b.total) + ' units per shopper. This ranking belongs to this scenario.';
+    if (M.finished(state) && b.count) text += ' Experiment minus baseline: ' + num(e.total - b.total) + ' units per shopper (negative means faster). This ranking belongs to this scenario.';
+    if (M.finished(state) && !b.count) text += ' No shoppers arrived, so no average or policy comparison is available.';
     document.getElementById('comparison-summary').textContent = text;
   }
-  function samples(run, tick) {
-    var a = run.history;
-    if (tick >= 0 && (!a.length || a[a.length - 1].tick !== tick)) a = a.concat([{ tick: tick, lanes: M.laneRows(run, tick) }]);
-    return a;
-  }
   function histories(state) {
-    var frag = document.createDocumentFragment(), all = runs(state).map(function (run) { return samples(run, state.tick); });
+    var frag = document.createDocumentFragment(), all = runs(state).map(function (run) { return M.historySamples(run, state.tick); });
     var xmax = Math.max(10, state.tick), ymax = 10;
     all.forEach(function (a) { a.forEach(function (s) { s.lanes.forEach(function (l) { ymax = Math.max(ymax, l.workload); }); }); });
     ymax = Math.ceil(ymax / 10) * 10;
@@ -85,7 +81,7 @@
   }
   function historyTable(state) {
     var frag = document.createDocumentFragment();
-    runs(state).forEach(function (run) { run.history.forEach(function (s) { row(frag, [name(run) + ' / ' + s.tick].concat(s.lanes.map(function (l) { return l.workload; }))); }); });
+    runs(state).forEach(function (run) { M.historySamples(run, state.tick).forEach(function (s) { row(frag, [name(run) + ' / ' + s.tick].concat(s.lanes.map(function (l) { return l.workload; }))); }); });
     document.querySelector('#history-table tbody').replaceChildren(frag);
   }
   function shopperTable(state) {
@@ -108,7 +104,7 @@
         var list = el('ul');
         s.candidates.forEach(function (c) { list.appendChild(el('li', 'Lane ' + (c.lane + 1) + ': ' + c.count + ' people' + (s.search ? ', workload ' + c.workload + ', predicted exit duration ' + c.prediction : '') + '.')); });
         article.appendChild(list);
-        article.appendChild(el('p', s.search ? 'Paid ' + s.searchTime + ' for inspection and ' + s.travel + ' for travel. Forecast = search + travel + remaining workload after that delay + own service; future arrivals are unknown.' : 'Compared two nearby people counts; no paid inspection. Travel costs ' + s.travel + ' units. Basket workloads are visible to you, but this shopper does not use them.'));
+        article.appendChild(el('p', s.search ? 'Inspection costs ' + s.searchTime + ' and travel costs ' + s.travel + ' units. Forecast = search + travel + remaining workload after that delay + own service. It excludes shoppers still searching or travelling, as well as future arrivals.' : 'Compared two nearby people counts; no paid inspection. Travel costs ' + s.travel + ' units. Basket workloads are visible to you, but this shopper does not use them.'));
       }
       frag.appendChild(article);
     });

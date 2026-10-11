@@ -9,6 +9,13 @@
     $('step').disabled = dirty || end || busy; $('finish').disabled = dirty || end || busy;
     $('play').disabled = dirty || end; $('play').textContent = busy ? 'Pause' : 'Run';
     $('check').disabled = dirty || !promptId || busy;
+    document.querySelectorAll('[data-preset]').forEach(function (button) {
+      var p = M.preset(button.dataset.preset);
+      button.setAttribute('aria-pressed', !dirty && Object.keys(p).every(function (k) { return p[k] === state.params[k]; }) ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-prompt]').forEach(function (button) {
+      button.setAttribute('aria-pressed', button.dataset.prompt === promptId ? 'true' : 'false');
+    });
   }
   function pause() { if (timer !== null) clearTimeout(timer); timer = null; mode = null; controls(); }
   function errors(map) {
@@ -23,7 +30,7 @@
   }
   function render() {
     V.render(state); controls();
-    var status = state.tick < 0 ? 'Ready, before tick 0.' : 'Tick ' + state.tick + '. ';
+    var status = state.tick < 0 ? 'Ready, before tick 0. ' : 'Tick ' + state.tick + '. ';
     if (M.finished(state)) status += 'Comparison complete; both stores have drained.';
     else if (state.tick >= state.params.horizon - 1) status += 'Arrivals closed; draining the remaining shoppers.';
     else if (state.tick >= 0) status += 'Arrivals open through tick ' + (state.params.horizon - 1) + '.';
@@ -45,7 +52,9 @@
     event.preventDefault(); pause(); var p = { express: $('express').checked };
     keys.forEach(function (k) { p[k] = $(k).value; }); var map = M.validateParameters(p); errors(map); clearSuccess();
     if (Object.keys(map).length) { dirty = true; controls(); $(Object.keys(map)[0]).focus(); announce('Settings were not applied. Correct the highlighted field; the comparison is retained.'); return; }
-    reset(M.parameters(p), 'Settings applied. Both stores restarted with identical shoppers.');
+    var applied = M.parameters(p), expected = promptId ? M.preset(promptId) : null;
+    if (expected && Object.keys(expected).some(function (k) { return applied[k] !== expected[k]; })) clearPrompt();
+    reset(applied, 'Settings applied. Both stores restarted with identical shoppers.');
   });
   $('restart').addEventListener('click', function () { reset(state.params, 'Restarted with applied settings; discarded any edits.'); });
   $('defaults').addEventListener('click', function () { clearPrompt(); reset(M.initial(), 'Restored defaults and cleared the guided question.'); });
@@ -53,18 +62,29 @@
     var button = event.target.closest('[data-preset]'); if (!button) return;
     clearPrompt(); reset(M.preset(button.dataset.preset), 'Loaded ' + button.textContent + '; both stores restarted.');
   });
-  $('step').addEventListener('click', function () { state = M.advance(state); clearSuccess(); render(); announce('Processed tick ' + state.tick + (M.finished(state) ? '; comparison complete.' : '.')); });
+  $('step').addEventListener('click', function () {
+    var hadFocus = document.activeElement === $('step');
+    state = M.advance(state); clearSuccess(); render();
+    if (hadFocus && M.finished(state)) $('run-status').focus();
+    announce('Processed tick ' + state.tick + (M.finished(state) ? '; comparison complete.' : '.'));
+  });
   function batch() {
     if (!mode) return;
-    var finishing = mode === 'finish'; state = M.advanceMany(state, finishing ? 200 : 10); render();
-    if (M.finished(state)) { pause(); render(); announce('Comparison complete. Every admitted shopper has finished; final averages are available.'); }
+    var finishing = mode === 'finish', hadFocus = document.activeElement === $('play');
+    state = M.advanceMany(state, finishing ? 200 : 10); render();
+    if (M.finished(state)) { pause(); render(); if (hadFocus) $('run-status').focus(); announce('Comparison complete. Every admitted shopper has finished; see the results below.'); }
     else timer = setTimeout(batch, finishing ? 0 : 700);
   }
   $('play').addEventListener('click', function () {
     if (mode) { pause(); render(); announce('Paused at tick ' + state.tick + '.'); }
     else { mode = 'run'; clearSuccess(); controls(); render(); timer = setTimeout(batch, 700); announce('Running ten units every 700 milliseconds.'); }
   });
-  $('finish').addEventListener('click', function () { mode = 'finish'; clearSuccess(); controls(); render(); timer = setTimeout(batch, 0); announce('Finishing the comparison in batches. Pause is available.'); });
+  $('finish').addEventListener('click', function () {
+    var hadFocus = document.activeElement === $('finish');
+    mode = 'finish'; clearSuccess(); controls(); render();
+    if (hadFocus) $('play').focus();
+    timer = setTimeout(batch, 0); announce('Finishing the comparison in batches. Pause is available.');
+  });
   document.addEventListener('visibilitychange', function () { if (document.hidden && mode) { pause(); render(); announce('Paused because the page was hidden.'); } });
   Object.keys(M.PROMPTS).forEach(function (id) {
     var p = M.PROMPTS[id], button = document.createElement('button'); button.type = 'button'; button.textContent = p.title; button.dataset.prompt = id;
