@@ -2,8 +2,9 @@
 
 **[Click Here to Launch the Interactive Activity](https://financeprofessormckee.github.io/Supermarket-Queues-Activity/)**
 
-> **Status:** v1 prototype under review with David Friedman. Not yet accessibility-audited
-> for teaching release.
+> **Status:** proposed experiment-lab alternative to the v1 review prototype. The
+> original simulation rules are retained. This proposal has not completed the
+> visual, screen-reader, and classroom audit required for teaching release.
 
 Explore queue equilibria, negative feedback, search costs, and imperfect information. Two stores receive identical seeded shoppers. The baseline store balances on visible people counts; the experiment store can let shoppers pay to inspect basket workloads and can reserve an express lane. Students compare total exit time across policies.
 
@@ -18,6 +19,9 @@ This activity is a browser adaptation of Proposal 8 in David Friedman's
 * **Queues:** four lanes, baskets of 1–30 items, service time = items + 3.
 * **Paired comparison:** both stores see the same arrivals, so differences come from policy alone.
 * **Self-checks:** four optional prompts on balancing, workload information, costly search, and express capacity.
+* **Matched evidence:** final means, the 90th percentile, time components, and faster/tied/slower counts compare the same shoppers across stores. Inspect any admitted shopper's choice and outcome.
+* **Sensitivity check:** twelve consecutive seeds test whether a result persists across arrival streams. Each pair uses identical shoppers; summaries weight nonempty seeds equally. This is not a confidence interval.
+* **Evidence export:** download final paired shoppers or completed seed trials as CSV with the exact applied settings.
 
 The full model, its adaptations from Friedman's description, and acceptance cases are in
 [SPECIFICATION.md](SPECIFICATION.md). The recorded source brief is in [DESIGN.md](DESIGN.md).
@@ -26,6 +30,14 @@ The full model, its adaptations from Friedman's description, and acceptance case
 
 Open `index.html` in a browser. There's no build step, installation, or server, and
 everything is local. Model tests run with Node: `node tests/model-tests.cjs`.
+Additional evidence tests run with `node tests/analysis-tests.cjs`. No runtime
+dependencies, build step, server, persistence, or external services were added.
+For the optional DOM/controller suite, use Node 22.22.2+, 24.15.0+, or 26+
+within the supported major versions, then `npm ci --prefix tests` and
+`npm test --prefix tests`. These dependencies are for verification only.
+
+See [REVIEW.md](REVIEW.md) for the original audit and [LAB-PROPOSAL.md](LAB-PROPOSAL.md)
+for the proposed teaching flow, analysis definitions, and verification limits.
 
 ### License and Citation
 

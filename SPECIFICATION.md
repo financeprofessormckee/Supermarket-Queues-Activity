@@ -1,5 +1,10 @@
 # Supermarket — browser specification (v1)
 
+> **Proposal note:** The v1 model below remains the reference. This branch adds the
+> analysis and interface extension described in [LAB-PROPOSAL.md](LAB-PROPOSAL.md),
+> including local CSV exports and repeated-seed trials. These are proposed additions,
+> not claims about the original frozen scope or David Friedman's review approval.
+
 - **Decided:** 2026-10-02, by Eric McKee; David Friedman's review is invited.
 - **Reference:** Proposal 8 and the recorded DESIGN.md. The live description was unavailable during planning. Fresh browser code; no legacy import.
 

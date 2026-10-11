@@ -27,6 +27,8 @@ button, input { font: inherit; }
 button { min-height: 44px; padding: 0.5rem 0.85rem; border: 1px solid #767676; background: #fff; color: #5c0025; border-radius: 0.25rem; cursor: pointer; }
 button:hover { background: #f1e7eb; }
 button.primary { background: #5c0025; color: #fff; }
+button[aria-pressed="true"] { border: 2px solid #5c0025; background: #f1e7eb; box-shadow: inset 0 -3px #5c0025; }
+.results-link { display: inline-flex; min-height: 44px; align-items: center; }
 button:disabled { color: #595959; background: #eee; cursor: default; }
 .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem 1.25rem; }
 .fields > div { min-width: 0; }
@@ -64,3 +66,58 @@ svg { display: block; width: 100%; height: auto; }
 @media (max-width: 480px) { main { padding-block: 2rem; } .notice, .card { padding: 1rem; } .lane-grid { grid-template-columns: minmax(0, 1fr); } .store, .history, .decision { padding: 0.75rem; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
 @media print { .skip-link, .resources { display: none; } :root { background: #fff; } main { padding-block: 1rem; } }
+
+/* The lab keeps the local WT masthead and burgundy palette. */
+:root { background: #f7f5f1; }
+main { padding-top: 2.5rem; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 3rem; align-items: center; padding-block: 1rem 2rem; }
+.hero h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(3rem, 6vw, 4.7rem); letter-spacing: -0.04em; margin-bottom: 1rem; color: #5c0025; }
+.hero .intro { font-size: clamp(1.25rem, 2.5vw, 1.7rem); line-height: 1.35; max-width: 35rem; }
+.hero-note { background: #5c0025; color: #fff; border-radius: 0.5rem; padding: 1.7rem; }
+.hero-note .eyebrow { color: #f2d9e2; display: block; }
+.hero-note strong { display: block; font-size: clamp(1.35rem, 2.5vw, 2rem); line-height: 1.4; font-weight: 600; }
+.hero-note p { font-size: 0.95rem; margin-bottom: 0; }
+.section-nav { display: flex; flex-wrap: wrap; gap: 0.6rem; border-block: 1px solid #c5b4bc; padding-block: 0.9rem; }
+.section-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0.5rem 1rem; background: #fff; border-radius: 0.25rem; font-weight: 600; }
+.card { border-color: #ae9ca4; border-radius: 0.5rem; }
+.notice { font-size: 0.95rem; background: #fffaf4; }
+.scenario-description { padding: 0.85rem 1rem; background: #f5edf0; border-left: 3px solid #5c0025; }
+.outcome-card { border-top: 4px solid #5c0025; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 0.8rem; margin-block: 1.4rem; }
+.metric { display: flex; flex-direction: column; gap: 0.45rem; padding: 1.05rem; border: 1px solid #b8a7af; border-radius: 0.35rem; background: #fcfafb; min-width: 0; }
+.metric-label { font-size: 0.85rem; font-weight: 600; }
+.metric-value { font-size: clamp(1.45rem, 3vw, 2.2rem); font-variant-numeric: tabular-nums; line-height: 1.25; overflow-wrap: anywhere; }
+.metric-note { font-size: 0.85rem; color: #595959; }
+.metric-emphasis { background: #5c0025; color: #fff; border-color: #5c0025; }
+.metric-emphasis .metric-note { color: #f9e9ef; }
+.breakdown-row { margin-block: 0.85rem; }
+.breakdown-row strong { font-size: 0.95rem; }
+.stacked-bar { display: flex; width: 100%; min-height: 1.6rem; margin-top: 0.35rem; background: #ece8e5; border: 1px solid #8b7f84; }
+.time-segment { display: block; min-height: 1.6rem; }
+.segment-search { background: #5c0025; }
+.segment-travel { background: repeating-linear-gradient(45deg, #436480 0, #436480 4px, #7196b5 4px, #7196b5 7px); }
+.segment-wait { background: #b26528; }
+.segment-service { background: repeating-linear-gradient(90deg, #365443 0, #365443 6px, #769582 6px, #769582 8px); }
+.time-legend { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; padding: 0; list-style: none; font-size: 0.9rem; }
+.time-legend li { display: flex; align-items: center; gap: 0.4rem; }
+.swatch { display: inline-block; width: 1rem; height: 1rem; border: 1px solid #595959; flex-shrink: 0; }
+.store { border-top: 3px solid #5c0025; }
+.store:nth-child(2) { border-top-color: #1a5a9e; }
+.workload-meter { background: #eee8eb; min-height: 0.45rem; margin-block: 0.6rem; }
+.workload-meter span { display: block; height: 0.45rem; background: #5c0025; }
+.store:nth-child(2) .workload-meter span { background: #1a5a9e; }
+.inspected-basket { outline: 2px solid #5c0025; outline-offset: 1px; font-weight: 700; }
+.inspector-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 0.7rem; margin-block: 1rem; }
+.inspector-controls > div { flex: 1 1 9rem; max-width: 15rem; }
+.chosen-candidate { font-weight: 600; }
+.phase-label { border-left: 3px solid #5c0025; padding-left: 0.7rem; font-weight: 600; }
+.shopper-ledger { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.3rem 1rem; }
+.shopper-ledger dd { margin: 0; font-variant-numeric: tabular-nums; }
+.decision-total { border-top: 1px solid #b8a7af; padding-top: 0.7rem; font-weight: 600; }
+.robustness-card { background: #fffaf4; }
+progress { display: block; width: 100%; height: 0.8rem; accent-color: #5c0025; margin-block: 0.4rem 1rem; }
+#progress-label { font-size: 0.9rem; font-weight: 400; }
+th, td { font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) { .hero { grid-template-columns: minmax(0, 1fr); gap: 1rem; } .hero-note { padding: 1.25rem; } .hero-note strong { max-width: 21rem; } }
+@media (max-width: 480px) { .section-nav a { flex: 1 1 40%; } .metrics { grid-template-columns: minmax(0, 1fr); } .inspector-controls > div { max-width: none; } }
+@media print { .section-nav, .buttons, .inspector-controls { display: none; } .card, .metric { break-inside: avoid; } .hero { display: block; } .hero-note { background: #fff; color: #2a2a2a; border: 1px solid #767676; } .hero-note .eyebrow { color: #5c0025; } }

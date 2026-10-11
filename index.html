@@ -22,10 +22,17 @@
     <div class="cob-brand__rule" aria-hidden="true"></div>
   </header>
   <main id="main" tabindex="-1">
-    <p class="eyebrow">Friedman Economic Games · Proposal 8</p>
-    <h1>Supermarket</h1>
-    <p class="intro">Explore queue equilibria, negative feedback, search costs, and imperfect information.</p>
-    <p class="notice"><strong>Review prototype · v1.</strong> Compare the same shoppers in two stores. The baseline uses nearby people counts; the experiment can pay for basket information or reserve an express lane. Arrivals stay fixed: waiting costs do not change demand in this version.</p>
+    <noscript><p class="notice">JavaScript is required to run this local simulation. Enable it and reload to compare the two stores. The instructions and project notes remain available below.</p></noscript>
+    <div class="hero">
+      <div><p class="eyebrow">Friedman Economic Games · Proposal 8</p>
+        <h1>Supermarket</h1>
+        <p class="intro">Does a better-informed shopper choose a faster line?</p>
+        <p>Explore queue balancing, imperfect information, and the price of finding out. Change one store’s policy. Follow the same shoppers through both.</p>
+      </div>
+      <aside class="hero-note" aria-label="The comparison"><span class="eyebrow">One fair comparison</span><strong>Same arrivals.<br>Same baskets.<br>Different choices.</strong><p>Four lanes in each store. Total exit time includes every step from arrival to departure.</p></aside>
+    </div>
+    <nav class="section-nav" aria-label="Activity sections"><a href="#settings-heading">1. Set up</a><a href="#playback-heading">2. Watch</a><a href="#outcome-heading">3. Compare</a><a href="#robustness-heading">4. Test again</a></nav>
+    <p class="notice"><strong>Experimental teaching lab · review proposal.</strong> The baseline uses nearby people counts. The experiment can inspect workloads or reserve an express lane. Demand stays fixed, shoppers never switch queues, and time is in abstract units. These are model assumptions, not a forecast for a real supermarket.</p>
     <section aria-labelledby="instructions-heading">
       <h2 id="instructions-heading">Try a comparison</h2>
       <ol>
@@ -36,13 +43,14 @@
       <p>Time is measured in abstract units, not minutes. Each basket takes its number of items plus three units to check out. Shoppers choose once and stay in their queue.</p>
     </section>
     <section class="card" aria-labelledby="settings-heading">
-      <h2 id="settings-heading">Set up the experiment</h2>
+      <h2 id="settings-heading" tabindex="-1">Set up the experiment</h2>
       <div class="buttons" id="presets" aria-label="Comparison scenarios">
         <button type="button" data-preset="balance">Queue balancing</button>
         <button type="button" data-preset="cheap">Cheap information</button>
         <button type="button" data-preset="costly">Costly information</button>
         <button type="button" data-preset="express">Express checkout</button>
       </div>
+      <p id="scenario-description" class="scenario-description"></p>
       <form id="settings" novalidate>
         <div class="fields">
           <div><label for="seed">Random seed</label><input id="seed" type="number" min="1" max="2147483647" step="1" aria-describedby="error-seed"><span class="error" id="error-seed"></span></div>
@@ -61,36 +69,64 @@
       </form>
     </section>
     <section class="card" aria-labelledby="playback-heading">
-      <h2 id="playback-heading">Follow the shoppers</h2>
+      <h2 id="playback-heading" tabindex="-1">Follow the shoppers</h2>
       <div class="buttons"><button type="button" id="step">Step one unit</button><button type="button" id="play" class="primary">Run</button><button type="button" id="finish">Finish comparison</button></div>
-      <p id="run-status" class="status"></p>
+      <p id="run-status" class="status" tabindex="-1"></p>
+      <label for="run-progress" id="progress-label">Arrival window</label><progress id="run-progress" max="600" value="0"></progress>
+      <a href="#results-heading" class="results-link">Jump to comparison results</a>
       <p id="applied-settings" class="help"></p>
       <p class="help">Run advances ten units every 700 milliseconds. Pause stops Run or Finish comparison. Motion is a schematic; the tables carry the same results.</p>
     </section>
+    <section class="card outcome-card" aria-labelledby="outcome-heading">
+      <p class="eyebrow">The policy result</p><h2 id="outcome-heading" tabindex="-1">Does the experiment save time?</h2>
+      <p id="outcome-status">Finish both stores to compare the same complete group of shoppers.</p>
+      <div id="outcome-metrics" class="metrics"></div>
+      <div id="time-breakdown" class="time-breakdown"></div>
+      <div class="buttons"><button id="export-comparison" type="button" disabled>Download paired shopper CSV</button><a class="results-link" href="#results-heading">Read all time components</a></div>
+    </section>
     <section aria-labelledby="stores-heading">
       <h2 id="stores-heading">The two stores</h2>
-      <p>Each card shows the basket in service and up to six waiting baskets, followed by the remaining count. A workload is the time needed to finish the current line if no one else joins.</p>
+      <p>Each card shows the basket in service and up to six waiting baskets, followed by the remaining count. A workload is the time needed to finish the current line if no one else joins. The bars share a scale across all eight lanes at the current tick.</p>
       <div class="stores" id="stores"></div>
     </section>
     <section class="card" aria-labelledby="results-heading">
-      <h2 id="results-heading">Compare total exit time</h2>
+      <h2 id="results-heading" tabindex="-1">Compare total exit time</h2>
       <p id="comparison-summary" class="status"></p>
       <p>All averages below are per completed shopper. <strong>Search + travel + queue wait + service = total exit time.</strong> During playback, unfinished shoppers are excluded and the averages are provisional.</p>
+      <p class="help">Searching and non-searching groups contain different shoppers. Their averages alone do not isolate the effect of searching. The final all-shopper comparison uses the same arrivals and baskets in both stores.</p>
       <div class="table-scroll" tabindex="0" role="region" aria-label="Store and shopper cohort averages">
         <table id="summary-table"><caption>Mean time components, in abstract time units</caption><thead><tr><th scope="col">Store / cohort</th><th scope="col">Completed</th><th scope="col">Search</th><th scope="col">Travel</th><th scope="col">Queue wait</th><th scope="col">Service</th><th scope="col">Total exit</th></tr></thead><tbody></tbody></table>
       </div>
     </section>
+    <section class="card" aria-labelledby="paired-heading">
+      <p class="eyebrow">Beyond the average</p><h2 id="paired-heading">Who gains, and who waits longer?</h2>
+      <p>Compare each shopper with their own outcome in the other store. Groups below use the experiment’s search assignment and basket cutoff in <em>both</em> stores. These are policy effects on the whole queue system, not isolated effects of one shopper’s decision.</p>
+      <p id="paired-status" class="status"></p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Matched shopper cohorts"><table id="paired-table"><caption>Final matched cohorts · negative change means faster</caption><thead><tr><th scope="col">Same shoppers in both stores</th><th scope="col">Count</th><th scope="col">Baseline mean</th><th scope="col">Experiment mean</th><th scope="col">Change</th><th scope="col">Faster / tied / slower</th></tr></thead><tbody></tbody></table></div>
+      <p class="help">The 90th percentile is the smallest observed total exit time at or above 90% of shoppers (nearest-rank method). Individual winners and losers can coexist with a better average.</p>
+    </section>
     <section class="card" aria-labelledby="history-heading">
       <h2 id="history-heading">Lane workloads over time</h2>
-      <p>Each line is one lane. Numbered labels and different line patterns supplement color. Samples are recorded every ten units, when arrivals stop, and when a store drains.</p>
+      <p>Each line is one lane. Numbered labels and different line patterns supplement color. Samples are recorded every ten units, when arrivals stop, and when a store drains. The chart and table also include the current tick.</p>
       <div class="stores" id="histories"></div>
       <details id="history-details"><summary>Read the workload history table</summary><div class="table-scroll" tabindex="0" role="region" aria-label="Sampled lane workload history"><table id="history-table"><caption>Recorded workload samples (units)</caption><thead><tr><th scope="col">Store / tick</th><th scope="col">Lane 1</th><th scope="col">Lane 2</th><th scope="col">Lane 3</th><th scope="col">Lane 4</th></tr></thead><tbody></tbody></table></div></details>
     </section>
     <section class="card" aria-labelledby="shoppers-heading">
       <h2 id="shoppers-heading">Individual shopper evidence</h2>
       <p>The same shopper ID, basket, source, and arrival appear in both stores. Searchers forecast from current basket workloads; they cannot see later arrivals. Non-searchers compare only two nearby people counts.</p>
+      <div class="inspector-controls"><button id="previous-shopper" type="button" disabled>Previous shopper</button><div><label for="inspect-shopper">Shopper ID</label><input id="inspect-shopper" type="number" min="1" step="1" disabled aria-describedby="inspector-help inspector-error" aria-controls="decisions"><span id="inspector-error" class="error"></span></div><button id="next-shopper" type="button" disabled>Next shopper</button><button id="latest-shopper" type="button" disabled>Follow latest arrival</button></div>
+      <p id="inspector-help" class="help">Choose any admitted shopper to compare their information, lane choice, forecast, and actual outcome.</p>
       <div class="stores" id="decisions"></div>
       <details id="shopper-details"><summary>Read individual shopper times and current phases</summary><div class="table-scroll" tabindex="0" role="region" aria-label="Individual shopper timing"><table id="shopper-table"><caption>Admitted shoppers: departure and total exit appear only after completion. Search and travel are planned durations until completed.</caption><thead><tr><th scope="col">Store / ID</th><th scope="col">Items</th><th scope="col">Source</th><th scope="col">Searcher</th><th scope="col">Lane</th><th scope="col">Phase</th><th scope="col">Arrival</th><th scope="col">Join</th><th scope="col">Start service</th><th scope="col">Departure</th><th scope="col">Search</th><th scope="col">Travel</th><th scope="col">Queue wait</th><th scope="col">Service</th><th scope="col">Total exit</th></tr></thead><tbody></tbody></table></div></details>
+    </section>
+    <section class="card robustness-card" aria-labelledby="robustness-heading">
+      <p class="eyebrow">One seed is one example</p><h2 id="robustness-heading" tabindex="-1">Does the result hold across twelve seeds?</h2>
+      <p>Rerun the applied settings with twelve consecutive seeds, starting at the applied seed. Each trial pairs identical shoppers across stores and drains every queue. Your main comparison stays where you left it.</p>
+      <div class="buttons"><button id="repeat-start" class="primary" type="button">Run twelve-seed comparison</button><button id="repeat-stop" type="button" disabled>Stop seed trials</button><button id="export-trials" type="button" disabled>Download seed-trial CSV</button></div>
+      <p id="repeat-status" class="status" tabindex="-1" role="status">No seed trials yet.</p>
+      <div id="repeat-results"></div>
+      <details id="repeat-details"><summary>Read each seed’s result</summary><div class="table-scroll" tabindex="0" role="region" aria-label="Seed-by-seed results"><table id="repeat-table"><caption>One complete paired comparison per seed · time units</caption><thead><tr><th scope="col">Seed</th><th scope="col">Shoppers</th><th scope="col">Baseline mean</th><th scope="col">Experiment mean</th><th scope="col">Change</th></tr></thead><tbody></tbody></table></div></details>
+      <p class="help">Each nonempty seed gets equal weight in the summary. Empty trials have no mean and are excluded. This deterministic sensitivity check is not a confidence interval or a probability that a policy is best. Changing settings clears these results.</p>
     </section>
     <section class="card" aria-labelledby="prompts-heading">
       <h2 id="prompts-heading">Optional guided experiments</h2>
@@ -117,7 +153,9 @@
   </footer>
   <p id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
   <script src="js/model.js"></script>
+  <script src="js/analysis.js"></script>
   <script src="js/view.js"></script>
+  <script src="js/lab-view.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
