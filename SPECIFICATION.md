@@ -40,3 +40,16 @@ Verify hand-calculated timing/routing/FIFO/ties, express boundary, forecasts, co
 ## Freeze
 
 Verify, commit/push privately, and freeze v1 for David's review; existing frozen activities remain unchanged. No public publishing, outreach, license selection, or monitoring. After feedback and before teaching release: full WCAG 2.2/2.1 AA audit including Parsing, ACCESSIBILITY.md and Accessibility Conformance Report.docx, screen-reader/classroom evaluation, and release terms.
+
+## Approved revision — experiment lab, quieter default (2026-10-15)
+
+Eric McKee compared JfowlerSIAI's two public proposals and approved adopting PR #2 (commit `82dbb7c9e4b8d7627da2c66794129fc88f1a40f0`, base `884c15a160137aee258d3e993a468f13ce3e27f6`) in this development folder. PR #1's conservative fixes are contained in PR #2 and are not imported separately. This revision supersedes the v1 freeze for this game only; the v1 rules above remain the model reference. David's review is invited.
+
+- **Model unchanged:** routing, service time, randomness, express eligibility, fixed demand, and all four fixture means are unchanged. Analysis lives in DOM-free `js/analysis.js`; definitions are in [LAB-PROPOSAL.md](LAB-PROPOSAL.md).
+- **Included repairs:** chart and history table share one sample list including the live tick; Finish/completion focus handoffs; pressed states for presets and guided questions; incompatible guided questions clear on Apply; no-arrival, forecast-limit, and cohort-comparison wording; noscript fallback.
+- **Visible by default:** hero, section links, setup, playback with progress, the policy-result card (means, signed and percentage change, 90th percentile, time breakdown, paired CSV), stores, the component table, workload history, the latest shopper's decision cards, and guided experiments.
+- **Collapsed by default:** matched-shopper cohorts, the shopper inspector controls, and the twelve-seed trials. Only explicit user activation opens them (their summary, or the "4. Test again" link for trials); finishing, exporting, or running never opens a panel. Closing the inspector returns the decision cards to the latest arrival.
+- **Seed trials:** twelve consecutive seeds in cancellable 200-tick batches; partial results keep only fully drained trials; settings edits clear them. No confidence-interval or universal-ranking claim.
+- **Exports:** paired-shopper and seed-trial CSVs, generated locally. No persistence, service, analytics, or runtime dependency; jsdom is a pinned test-only dependency in `tests/`.
+
+Before teaching release: Eric's desktop/phone review, then the full WCAG 2.2/2.1 AA audit including Parsing and both reports. Public transfer, merge, and deployment remain separate tasks.

@@ -171,4 +171,15 @@ ok(Object.keys(M.validateParameters(null)).length === Object.keys(M.LIMITS).leng
 let threw = false; try { M.start(params({ seed: 0 })); } catch (e) { threw = e instanceof RangeError; } ok(threw, 'Initialization refuses invalid settings');
 threw = false; try { M.preset('missing'); } catch (e) { threw = e instanceof RangeError; } ok(threw, 'Unknown preset rejected');
 ok(!M.checkPrompt('missing', restarted, '').correct, 'Unknown prompt rejected');
+// Chart/table equivalence at an unsampled tick and the initial/sample boundaries.
+let live = M.start(M.initial());
+equal(M.historySamples(live.baseline, live.tick), [], 'No invented pre-start sample');
+live = M.advanceMany(live, 8); // tick 7, between stored samples
+const savedHistory = JSON.stringify(live.baseline.history);
+const samples = M.historySamples(live.baseline, live.tick);
+equal(samples.map(s => s.tick), [0, 7], 'Live endpoint supplements recorded history');
+equal(samples[1].lanes, M.laneRows(live.baseline, 7), 'Live endpoint has exact current values');
+equal(JSON.stringify(live.baseline.history), savedHistory, 'Reading samples leaves the history immutable');
+live = M.advanceMany(live, 3); // tick 10 already recorded
+equal(M.historySamples(live.baseline, live.tick).map(s => s.tick), [0, 10], 'Recorded endpoint is not duplicated');
 console.log(JSON.stringify({ checks, failures: 0, scenarios: scenarios.length, independent_event_ledger: 'pass', fixed_seed_fixtures: 'pass' }));

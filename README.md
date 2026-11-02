@@ -2,10 +2,11 @@
 
 **[Click Here to Launch the Interactive Activity](https://financeprofessormckee.github.io/Supermarket-Queues-Activity/)**
 
-> **Status:** v1 prototype under review with David Friedman. Not yet accessibility-audited
-> for teaching release.
+> **Status:** revised development version (November 2026), under review with David Friedman.
+> Not yet accessibility-audited for teaching release. Review notes for this revision are in
+> [REVIEW.md](REVIEW.md).
 
-Explore queue equilibria, negative feedback, search costs, and imperfect information. Two stores receive identical seeded shoppers. The baseline store balances on visible people counts; the experiment store can let shoppers pay to inspect basket workloads and can reserve an express lane. Students compare total exit time across policies.
+Explore queue equilibria, negative feedback, search costs, and imperfect information. Two stores receive identical seeded shoppers. The baseline store balances on visible people counts; the experiment store can let shoppers pay to inspect basket workloads and can reserve an express lane. Students compare total exit time across policies. This revision adds a paired-outcome experiment lab: a policy-result card up front, with matched cohorts, a shopper inspector, and twelve-seed trials collapsed until opened.
 
 ## Educator Guide: Classroom Integration
 

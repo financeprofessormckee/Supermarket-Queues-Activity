@@ -11,8 +11,9 @@
   function row(body, values) {
     var tr = el('tr'); values.forEach(function (v, i) { var td = el(i ? 'td' : 'th', v); if (!i) td.scope = 'row'; tr.appendChild(td); }); body.appendChild(tr); return tr;
   }
-  function stores(state) {
-    var frag = document.createDocumentFragment();
+  function stores(state, shopperId) {
+    var frag = document.createDocumentFragment(), scale = 1;
+    runs(state).forEach(function (run) { run.lanes.forEach(function (lane) { scale = Math.max(scale, M.workload(lane, state.tick)); }); });
     runs(state).forEach(function (run) {
       var article = el('article', undefined, 'store'); article.appendChild(el('h3', name(run)));
       article.appendChild(el('p', run.admitted + ' admitted · ' + run.completed.length + ' completed · ' + M.unfinished(run) + ' unfinished', 'lane-summary'));
@@ -25,8 +26,10 @@
         lane.appendChild(el('h4', 'Lane ' + (i + 1) + (express ? ' · express ≤' + state.params.cutoff : ' · ordinary')));
         lane.appendChild(el('p', l.active ? 'Serving #' + l.active.id + ': ' + l.active.items + ' items; ' + (l.active.end - state.tick) + ' units left' : 'Idle', 'serving'));
         lane.appendChild(el('p', l.queue.length + ' waiting · workload ' + M.workload(l, state.tick), 'lane-summary'));
+        var meter = el('div', undefined, 'workload-meter'), fill = el('span'); meter.setAttribute('aria-hidden', 'true');
+        fill.style.width = (M.workload(l, state.tick) / scale * 100) + '%'; meter.appendChild(fill); lane.appendChild(meter);
         var list = el('ol', undefined, 'baskets'); list.setAttribute('aria-label', 'Waiting basket sizes in order');
-        l.queue.slice(0, 6).forEach(function (s) { list.appendChild(el('li', '#' + s.id + ': ' + s.items + ' items')); });
+        l.queue.slice(0, 6).forEach(function (s) { list.appendChild(el('li', '#' + s.id + ': ' + s.items + ' items', s.id === shopperId ? 'inspected-basket' : '')); });
         if (l.queue.length > 6) list.appendChild(el('li', '+ ' + (l.queue.length - 6) + ' more'));
         lane.appendChild(list); grid.appendChild(lane);
       });
@@ -45,16 +48,12 @@
     var b = M.stats(state.baseline, state.params.cutoff), e = M.stats(state.experiment, state.params.cutoff);
     var text = M.finished(state) ? 'Final: every admitted shopper has finished.' : 'Provisional: ' + M.unfinished(state.baseline) + ' baseline and ' + M.unfinished(state.experiment) + ' experiment shoppers are unfinished; future arrivals may also remain.';
     if (b.count && e.count) text += ' Mean total exit: baseline ' + num(b.total) + ', experiment ' + num(e.total) + ' units.';
-    if (M.finished(state) && b.count) text += ' Experiment minus baseline: ' + num(e.total - b.total) + ' units per shopper. This ranking belongs to this scenario.';
+    if (M.finished(state) && b.count) text += ' Experiment minus baseline: ' + num(e.total - b.total) + ' units per shopper (negative means faster). This ranking belongs to this scenario.';
+    if (M.finished(state) && !b.count) text += ' No shoppers arrived, so no average or policy comparison is available.';
     document.getElementById('comparison-summary').textContent = text;
   }
-  function samples(run, tick) {
-    var a = run.history;
-    if (tick >= 0 && (!a.length || a[a.length - 1].tick !== tick)) a = a.concat([{ tick: tick, lanes: M.laneRows(run, tick) }]);
-    return a;
-  }
   function histories(state) {
-    var frag = document.createDocumentFragment(), all = runs(state).map(function (run) { return samples(run, state.tick); });
+    var frag = document.createDocumentFragment(), all = runs(state).map(function (run) { return M.historySamples(run, state.tick); });
     var xmax = Math.max(10, state.tick), ymax = 10;
     all.forEach(function (a) { a.forEach(function (s) { s.lanes.forEach(function (l) { ymax = Math.max(ymax, l.workload); }); }); });
     ymax = Math.ceil(ymax / 10) * 10;
@@ -85,7 +84,7 @@
   }
   function historyTable(state) {
     var frag = document.createDocumentFragment();
-    runs(state).forEach(function (run) { run.history.forEach(function (s) { row(frag, [name(run) + ' / ' + s.tick].concat(s.lanes.map(function (l) { return l.workload; }))); }); });
+    runs(state).forEach(function (run) { M.historySamples(run, state.tick).forEach(function (s) { row(frag, [name(run) + ' / ' + s.tick].concat(s.lanes.map(function (l) { return l.workload; }))); }); });
     document.querySelector('#history-table tbody').replaceChildren(frag);
   }
   function shopperTable(state) {
@@ -98,24 +97,35 @@
     }); });
     document.querySelector('#shopper-table tbody').replaceChildren(frag);
   }
-  function decisions(state) {
+  function decisions(state, shopperId) {
     var frag = document.createDocumentFragment();
     runs(state).forEach(function (run) {
-      var article = el('article', undefined, 'decision'), s = run.lastDecision; article.appendChild(el('h3', name(run) + ' · latest choice'));
+      var id = shopperId || (run.lastDecision && run.lastDecision.id);
+      var article = el('article', undefined, 'decision'), s = M.shopperRows(run, state.tick).find(function (shopper) { return shopper.id === id; });
+      article.appendChild(el('h3', name(run) + (s ? ' · shopper #' + s.id : ' · shopper choice')));
       if (!s) article.appendChild(el('p', 'No shopper has arrived yet.'));
       else {
         article.appendChild(el('p', 'Shopper #' + s.id + ', ' + s.items + ' items, source ' + (s.source + 1) + ', arrival ' + s.arrival + ': chose lane ' + (s.lane + 1) + '.'));
         var list = el('ul');
-        s.candidates.forEach(function (c) { list.appendChild(el('li', 'Lane ' + (c.lane + 1) + ': ' + c.count + ' people' + (s.search ? ', workload ' + c.workload + ', predicted exit duration ' + c.prediction : '') + '.')); });
+        s.candidates.forEach(function (c) { list.appendChild(el('li', 'Lane ' + (c.lane + 1) + ': ' + c.count + ' people' + (s.search ? ', workload ' + c.workload + ', predicted exit duration ' + c.prediction : '') + (c.lane === s.lane ? ' · chosen' : '') + '.', c.lane === s.lane ? 'chosen-candidate' : '')); });
         article.appendChild(list);
-        article.appendChild(el('p', s.search ? 'Paid ' + s.searchTime + ' for inspection and ' + s.travel + ' for travel. Forecast = search + travel + remaining workload after that delay + own service; future arrivals are unknown.' : 'Compared two nearby people counts; no paid inspection. Travel costs ' + s.travel + ' units. Basket workloads are visible to you, but this shopper does not use them.'));
+        article.appendChild(el('p', s.search ? 'Inspection costs ' + s.searchTime + ' and travel costs ' + s.travel + ' units. Forecast = search + travel + remaining workload after that delay + own service. It excludes shoppers still searching or travelling, as well as future arrivals.' : 'Compared two nearby people counts; no paid inspection. Travel costs ' + s.travel + ' units. Basket workloads are visible to you, but this shopper does not use them.'));
+        article.appendChild(el('p', 'Current phase: ' + s.phase + '.', 'phase-label'));
+        var ledger = el('dl', undefined, 'shopper-ledger');
+        [['Arrival', s.arrival], ['Join lane (scheduled)', s.join], ['Service starts', s.start === undefined ? 'Not yet' : s.start],
+          ['Departure', s.phase === 'Completed' ? s.end : 'Not yet']].forEach(function (entry) { ledger.append(el('dt', entry[0]), el('dd', String(entry[1]))); });
+        article.appendChild(ledger);
+        if (s.phase === 'Completed') {
+          article.appendChild(el('p', 'Total exit: ' + (s.end - s.arrival) + ' = ' + s.searchTime + ' search + ' + s.travel + ' travel + ' + (s.start - s.join) + ' queue wait + ' + (s.items + 3) + ' service.', 'decision-total'));
+          if (s.search) article.appendChild(el('p', 'Forecast: ' + s.prediction + ' units. Actual minus forecast: ' + (s.end - s.arrival - s.prediction) + ' units. Later joins can change the outcome.', 'help'));
+        }
       }
       frag.appendChild(article);
     });
     document.getElementById('decisions').replaceChildren(frag);
   }
-  function render(state) {
-    stores(state); summary(state); histories(state); decisions(state);
+  function render(state, shopperId) {
+    stores(state, shopperId); summary(state); histories(state); decisions(state, shopperId);
     if (document.getElementById('history-details').open) historyTable(state);
     if (document.getElementById('shopper-details').open) shopperTable(state);
   }

@@ -91,6 +91,15 @@
     return run.lanes.map(function (l, i) { return { lane: i + 1, people: l.queue.length + (l.active ? 1 : 0), waiting: l.queue.length,
       serving: l.active ? l.active.id : null, remaining: l.active ? Math.max(0, l.active.end - tick) : 0, workload: workload(l, tick) }; });
   }
+  // Include the live endpoint in both the chart and its equivalent table.
+  // Keep recorded history immutable when the current tick is between samples.
+  function historySamples(run, tick) {
+    var history = run.history;
+    if (tick >= 0 && (!history.length || history[history.length - 1].tick !== tick)) {
+      return history.concat([{ tick: tick, lanes: laneRows(run, tick) }]);
+    }
+    return history;
+  }
   function nextRun(p, old, arrivals, tick) {
     var run = Object.assign({}, old, { pending: old.pending.slice(), completed: old.completed.slice(),
       lanes: old.lanes.map(function (l) { return { active: l.active, queue: l.queue.slice() }; }) });
@@ -157,5 +166,5 @@
   }
   return { LIMITS: LIMITS, PROMPTS: PROMPTS, initial: initial, validate: validate, validateParameters: validateParameters, parameters: parameters,
     preset: preset, stream: stream, workload: workload, choose: choose, start: start, advance: advance, advanceMany: advanceMany,
-    finished: finished, unfinished: unfinished, stats: stats, laneRows: laneRows, shopperRows: shopperRows, checkPrompt: checkPrompt };
+    finished: finished, unfinished: unfinished, stats: stats, laneRows: laneRows, historySamples: historySamples, shopperRows: shopperRows, checkPrompt: checkPrompt };
 });
